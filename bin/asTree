@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const path = require('path')
+const jsdom = require('jsdom')
+const ShEx = require('shex')
+const { JSDOM } = jsdom
+const schemaText = fs.readFileSync(process.argv[2], 'UTF-8')
+const namespace = process.argv[3]
+let shexParser = ShEx.Parser.construct('file://' + process.argv[3])
+let schema = shexParser.parse(schemaText)
+const template = fs.readFileSync(
+  process.argv[4] || path.join(__dirname, '../doc/asTree-template.html'),
+  'UTF-8')
+const dom = new JSDOM(template, {
+  url: 'file:template.html',
+  runScripts: 'dangerously',
+  resources: 'usable'
+})
+let $ = require('jquery')(dom.window)
+const elt = $(process.argv[5] || 'body')
+// $('p').append('HERE')
+elt.append(
+  require('../shex-html.js')($, require('marked')).asTree(schema, 'fread ' + process.argv[3] + ' ' + new Date().toISOString(), $('#namespace').val())
+)
+console.log(dom.serialize())

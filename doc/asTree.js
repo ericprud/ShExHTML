@@ -220,7 +220,9 @@ function main () {
   function parseAndRender (text, title, status) {
     let shexParser = ShEx.Parser.construct($('#namespace').val())
     let schema = shexParser.parse(text)
-    ShExHTML($).asTree(schema, title + ' ' + new Date().toISOString(), $('#namespace').val())
+    $('.render').append(
+      ShExHTML($, marked).asTree(schema, $('#namespace').val())
+    )
   }
 
 }

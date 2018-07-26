@@ -1,3 +1,4 @@
+
 var ShExHTML = (function () {
   const UPCLASS = 'extends up'
   const KEYWORD = 'keyword'
@@ -12,6 +13,7 @@ var ShExHTML = (function () {
   const CLASS_shapeExpr = 'shapeExpr'
   const ARROW_up = '⇧'
   const ARROW_down = '⇩'
+  return function ($, marked) {
   const MARKED_OPTS = {
     "baseUrl": null,
     "breaks": false,
@@ -22,7 +24,7 @@ var ShExHTML = (function () {
     "langPrefix": "lang-",
     "mangle": true,
     "pedantic": false,
-    "renderer": Object.assign({}, window.marked.Renderer.prototype, {
+    "renderer": Object.assign({}, marked.Renderer.prototype, {
       // "options": null
       heading: function(text, level, raw) {
         if (this.options.headerIds) {
@@ -50,13 +52,10 @@ var ShExHTML = (function () {
     "xhtml": false
   }
 
-  return function ($) {
     return { asTree }
 
-    function asTree (schema, source, namespace) {
-      console.dir(schema)
+    function asTree (schema, namespace) {
       let schemaBox = $('<div/>')
-      $('.render').append(schemaBox)
       let packageRef = [null]
       let packageDiv = null
       schemaBox.append(
@@ -89,6 +88,7 @@ var ShExHTML = (function () {
           (packageDiv || schemaBox).append(add)
         }
       )
+      return schemaBox
 
       function renderDecl (shapeLabel, packageRef) {
         let shapeDecl = schema.shapes[shapeLabel]
@@ -117,7 +117,7 @@ var ShExHTML = (function () {
               switch (a.object.type) {
               case COMMONMARK:
                 div.append(
-                  $('<div/>', { class: CLASS_comment }).append(window.marked(
+                  $('<div/>', { class: CLASS_comment }).append(marked(
                     a.object.value, MARKED_OPTS
                   ))
                 )
@@ -163,7 +163,7 @@ var ShExHTML = (function () {
             function ref (ext) {
               let arrow = $('<span/>', {class: UPCLASS}).text(ARROW_down)
               arrow.on('click', (evt) => inject(arrow, evt, ext, parents))
-              return [arrow, $('<a/>', {href: '#' + trim(ext), class: UPCLASS}).append(trim(ext))]
+              return [arrow, $('<a/>', {href: '#' + trim(ext).text(), class: UPCLASS}).append(trim(ext))]
             }
 
             function inject (arrow, evt, ext, parents) {
