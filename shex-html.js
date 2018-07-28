@@ -162,12 +162,15 @@ var ShExHTML = (function () {
 
             function ref (ext) {
               let arrow = $('<span/>', {class: UPCLASS}).text(ARROW_down)
-              arrow.on('click', (evt) => inject(arrow, evt, ext, parents))
+              arrow.on('click', (evt) => {
+                inject(evt, ext, parents)
+              })
               return [arrow, $('<a/>', {href: '#' + trim(ext).text(), class: UPCLASS}).append(trim(ext))]
             }
 
-            function inject (arrow, evt, ext, parents) {
-              let tr = $(evt.target).parent().parent()
+            function inject (evt, ext, parents) {
+              let arrow = $(evt.target)
+              let tr = arrow.parent().parent()
               // let add = renderTripleExpr(schema.shapes[ext].expression, lead, false)
               let shapeDecl = schema.shapes[ext]
               if (shapeDecl.type === 'ShapeDecl') {
@@ -189,7 +192,7 @@ var ShExHTML = (function () {
               arrow.off()
               doomed.forEach(elt => elt.hide('slow', function() { elt.remove();}))
               arrow.text(ARROW_down)
-              arrow.on('click', (evt) => inject(arrow, evt, ext, []))
+              arrow.on('click', (evt) => inject(evt, ext, []))
             }
           }
           return expr.expression ? top.concat(renderTripleExpr(expr.expression, lead, true)) : top
