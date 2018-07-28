@@ -81,7 +81,7 @@ var ShExHTML = (function () {
           let add = renderDecl(shapeLabel, packageRef)
           if (oldPackage !== packageRef[0]) {
             packageDiv = $('<section>')
-            packageDiv.append($('<h2/>').text(trimStr(packageRef[0])))
+            packageDiv.append($('<h2/>', {class: CLASS_native}).text(trimStr(packageRef[0])))
             schemaBox.append(packageDiv)
             oldPackage = packageRef[0]
           }
