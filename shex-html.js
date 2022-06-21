@@ -223,16 +223,17 @@ var ShExHTML = (function () {
           ).map(
             a => a.object.value
           )
+          const predicateTD = $('<td/>').append(
+            lead,
+            last ? '└' :  '├',
+            $('<span/>', {class: 'arrows'}).text(expr.valueExpr === undefined ? '◯' : expr.valueExpr.type === 'NodeConstraint' ? '▭' : '▻'),
+            predicate
+          )
           if (comments.length > 0) {
-            predicate.attr('title', comments[0])
+            predicateTD.attr('title', comments[0])
           }
           let declRow = $('<tr/>').append(
-            $('<td/>').append(
-              lead,
-              last ? '└' :  '├',
-              $('<span/>', {class: 'arrows'}).text(expr.valueExpr === undefined ? '◯' : expr.valueExpr.type === 'NodeConstraint' ? '▭' : '▻'),
-              predicate
-            ),
+            predicateTD,
             $('<td/>').append(inline),
             $('<td/>').text(renderCardinality(expr))
           )

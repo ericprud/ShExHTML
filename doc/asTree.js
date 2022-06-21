@@ -194,7 +194,17 @@ function main () {
   const cgiParms = location.search.substr(1).split(/[,&]/).map(
     pair => pair.split("=").map(decodeURIComponent)
   )
-  cgiParms.filter(parm => parm[0] === 'load-url').forEach(pair => load(pair[1]))
+  cgiParms.forEach(pair => {
+    const [name, value] = pair
+    switch (name) {
+    case 'NS':
+      $('#namespace').val(value)
+      break
+    case 'URL':
+      load(value)
+      break
+    }
+  })
 
   $('#load-url').on('change', function (evt) { load($(this).val()); })
 
