@@ -65,7 +65,7 @@ var ShExHTML = (function () {
           $('<dt/>').text('prefixes'),
           $('<dd/>').append(
             $('<dl/>', { class: 'prolog' }).append(
-              Object.keys(schema.prefixes).reduce(
+              Object.keys(schema.prefixes || []).reduce(
                 (acc, prefix) => acc.concat(
                   $('<dt/>').text(prefix),
                   $('<dd/>').text(schema.prefixes[prefix])
@@ -74,11 +74,11 @@ var ShExHTML = (function () {
           )
         )
       )
-      Object.keys(schema.shapes).forEach(
-        (shapeLabel, idx) => {
-          let last = idx === Object.keys(schema.shapes).length - 1
+      schema.shapes.forEach(
+        (shapeDecl, idx) => {
+          let last = idx === schema.shapes.length - 1
           let oldPackage = packageRef[0]
-          let add = renderDecl(shapeLabel, packageRef)
+          let add = renderDecl(shapeDecl, packageRef)
           if (oldPackage !== packageRef[0]) {
             packageDiv = $('<section>')
             packageDiv.append($('<h2/>', {class: CLASS_native}).text(trimStr(packageRef[0])))
@@ -90,8 +90,8 @@ var ShExHTML = (function () {
       )
       return schemaBox
 
-      function renderDecl (shapeLabel, packageRef) {
-        let shapeDecl = schema.shapes[shapeLabel]
+      function renderDecl (shapeDecl, packageRef) {
+        const shapeLabel = shapeDecl.id;
         let abstract = false
         if (shapeDecl.type === 'ShapeDecl') {
           abstract = shapeDecl.abstract
@@ -117,7 +117,7 @@ var ShExHTML = (function () {
               switch (a.object.type) {
               case COMMONMARK:
                 div.append(
-                  $('<div/>', { class: CLASS_comment }).append(marked(
+                  $('<div/>', { class: CLASS_comment }).append(marked.parse(
                     a.object.value, MARKED_OPTS
                   ))
                 )
@@ -172,7 +172,7 @@ var ShExHTML = (function () {
               let arrow = $(evt.target)
               let tr = arrow.parent().parent()
               // let add = renderTripleExpr(schema.shapes[ext].expression, lead, false)
-              let shapeDecl = schema.shapes[ext]
+              let shapeDecl = schema.shapes.find(s => s.id === ext)
               if (shapeDecl.type === 'ShapeDecl') {
                 shapeDecl = shapeDecl.shapeExpr
               }
@@ -250,12 +250,13 @@ var ShExHTML = (function () {
       }
 
       function renderInlineShape (valueExpr) {
+        if (typeof valueExpr === 'string')
+          return trim(valueExpr)
+
         return valueExpr === undefined
           ? '.'
           : valueExpr.type === 'Shape'
           ? ''
-          : valueExpr.type === 'ShapeRef'
-          ? trim(valueExpr.reference)
           : valueExpr.type === 'NodeConstraint'
           ? renderInlineNodeConstraint(valueExpr)
           : valueExpr.type === 'ShapeOr'

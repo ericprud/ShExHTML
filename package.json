@@ -18,9 +18,9 @@
   },
   "homepage": "https://github.com/ericprud/ShExHTML#readme",
   "dependencies": {
+    "@shexjs/webapp": "^1.0.0-alpha.21",
     "jquery": "^3.3.1",
     "jsdom": "^11.11.0",
-    "marked": "^0.4.0",
-    "shex": "^0.9.2"
+    "marked": "^4.0.17"
   }
 }

@@ -191,8 +191,14 @@ function main () {
     }
   })
 
-  $('#load-url').on('change', function (evt) {
-    let source = $(this).val()
+  const cgiParms = location.search.substr(1).split(/[,&]/).map(
+    pair => pair.split("=").map(decodeURIComponent)
+  )
+  cgiParms.filter(parm => parm[0] === 'load-url').forEach(pair => load(pair[1]))
+
+  $('#load-url').on('change', function (evt) { load($(this).val()); })
+
+  function load (source) {
     // Give user some interface feedback before reading.
     let div = $('<div/>', {'id': source}).appendTo('#loaded')
     $('<li/>').append($('<a/>', {href: '#' + source}).text(source)).appendTo('#toc')
@@ -214,11 +220,11 @@ function main () {
       div.append($('<pre/>').text(error)).addClass('error')
     })
     return true
-  })
+  }
   prepareControls()
 
   function parseAndRender (text, title, status) {
-    let shexParser = ShEx.Parser.construct($('#namespace').val())
+    let shexParser = ShExWebApp.Parser.construct($('#namespace').val())
     let schema = shexParser.parse(text)
     $('.render').append(
       ShExHTML($, marked).asTree(schema, $('#namespace').val())
