@@ -1,5 +1,8 @@
 // Convert ShEx to FHIR Logical Tables
 
+const ShExParser = require('@shexjs/parser');
+const Marked = require('marked');
+
 // Global configuration and control variables.
 var TOGGLE_TIME = 50 // time in μsec to toggle collapsed lists.
 var RENDER_DELAY = 50 // time to pause for display (horrible heuristics). Could try: .css('opacity', .99)
@@ -234,10 +237,10 @@ function main () {
   prepareControls()
 
   function parseAndRender (text, title, status) {
-    let shexParser = ShExWebApp.Parser.construct($('#namespace').val())
+    let shexParser = ShExParser.construct($('#namespace').val())
     let schema = shexParser.parse(text)
     $('.render').append(
-      ShExHTML($, marked).asTree(schema, $('#namespace').val())
+      ShExHTML($, Marked).asTree(schema, $('#namespace').val())
     )
   }
 
