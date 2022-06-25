@@ -5,7 +5,7 @@ const Marked = require('marked');
 
 // Global configuration and control variables.
 var TOGGLE_TIME = 50 // time in μsec to toggle collapsed lists.
-var RENDER_DELAY = 50 // time to pause for display (horrible heuristics). Could try: .css('opacity', .99)
+const RENDER_DELAY = 50 // time to pause for display (horrible heuristics). Could try: .css('opacity', .99)
 var BUILD_PRODUCTS = true // can disable if OWL and ShEx construction crashes.
 var SUPPRESS_DUPLICATE_CLASSES = true // Don't list subclasses in parent's package.
 var UPPER_UNLIMITED = '*'
@@ -242,6 +242,13 @@ function main () {
     $('.render').append(
       ShExHTML($, Marked).asTree(schema, $('#namespace').val())
     )
+    if (location.hash !== '') {
+      const elt = document.getElementById(location.hash.substr(1))
+      if (elt) {
+        elt.scrollIntoView()
+        elt.classList.add('selected')
+      }
+    }
   }
 
 }

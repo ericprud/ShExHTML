@@ -8,6 +8,17 @@
     <script src='svg.min.js'></script>
     <!-- <script src="../../2015/01/DrawOver.js"></script> -->
     <style>
+      :root {
+          /* colors familiar to github users */
+          --color-attention-fg: #9a6700;
+          --color-attention-emphasis: #bf8700;
+          --color-attention-muted: rgba(212,167,44,0.4);
+          --color-attention-subtle: #fff8c5;
+      }
+      .selected {
+        background-color: var(--color-attention-subtle);
+        box-shadow: inset 2px 0 0 var(--color-attention-muted);
+      }
       #loadform { float: left; border: thin solid #f77; }
       .result { float:left; }
       .keyword { color: #818; }
