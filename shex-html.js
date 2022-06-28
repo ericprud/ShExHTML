@@ -79,7 +79,7 @@ var ShExHTML = (function () {
             setTimeout(() => {
               let last = idx === schema.shapes.length - 1
               let oldPackage = packageRef[0]
-              let add = renderDecl(shapeDecl, packageRef)
+              let add = renderDecl(shapeDecl, packageRef, 0)
               if (oldPackage !== packageRef[0]) {
                 packageDiv = $('<section>')
                 packageDiv.append($('<h2/>', {class: CLASS_native}).text(trimStr(packageRef[0])))
@@ -93,7 +93,7 @@ var ShExHTML = (function () {
         }
       ))
 
-      function renderDecl (shapeDecl, packageRef) {
+      function renderDecl (shapeDecl, packageRef, depth) {
         const shapeLabel = shapeDecl.id;
         const id = trimStr(shapeLabel)
         let abstract = false
@@ -101,11 +101,13 @@ var ShExHTML = (function () {
           abstract = shapeDecl.abstract
           shapeDecl = shapeDecl.shapeExpr
         }
-        let declRow = $('<tr/>').append(
-          $('<td/>').append(trim(shapeLabel)),
-          $('<td/>'),
-          $('<td/>')
-        )
+        let declRow = $('<tr/>')
+            .attr('data-inclusionDepth', depth)
+            .append(
+              $('<td/>').append(trim(shapeLabel)),
+              $('<td/>'),
+              $('<td/>')
+            )
         let div = $('<section/>', {id: id})
         div.append($(`<div class="header-wrapper"><h3 id="${id}"><bdi class="secno"></bdi>${id}</h3><a class="self-link" href="#${encodeURIComponent(id)}" aria-label="Permalink for ${id}"></a></div>`))
         // div.append($('<h3/>').append(trim(shapeLabel)))
@@ -140,11 +142,11 @@ var ShExHTML = (function () {
         )
 
         // @@ does a NodeConstraint render differently if it's in a nested vs. called from renderDecl?
-        div.append($('<table/>', {class: CLASS_shapeExpr}).append(renderShapeExpr(shapeDecl, '', declRow, abstract, [])))
+        div.append($('<table/>', {class: CLASS_shapeExpr}).append(renderShapeExpr(shapeDecl, '', declRow, abstract, [], depth)))
         return div
       }
 
-      function renderShapeExpr (expr, lead, declRow, abstract, parents) {
+      function renderShapeExpr (expr, lead, declRow, abstract, parents, depth) {
         let top = declRow ? [declRow] : []
         switch (expr.type) {
         case 'Shape':
@@ -154,17 +156,18 @@ var ShExHTML = (function () {
             if (declRow) {
               // Update the declRow with the first extends.
               declRow.find('td:nth-child(2)')
-                .append(ref(exts.shift(), 1))
+                .append(ref(exts.shift(), depth))
               declRow.addClass('includer')
             }
 
             // Each additional extends gets its own row.
             top = top.concat(exts.map(
               ext => $('<tr/>')
+                .attr('data-inclusionDepth', depth)
                 .addClass('includer')
                 .append(
                   $('<td/>').text(lead + '│' + '   '),
-                  $('<td/>').append(ref(ext, 1)),
+                  $('<td/>').append(ref(ext, depth)),
                   $('<td/>')
                 )
             ))
@@ -172,12 +175,12 @@ var ShExHTML = (function () {
             function ref (ext, depth) {
               let arrow = $('<span/>', {class: UPCLASS}).text(ARROW_down)
               arrow.on('click', (evt) => {
-                inject(evt, ext, parents)
+                inject(evt, ext, parents, depth)
               })
               return [arrow, $('<a/>', {href: '#' + trim(ext).text(), class: UPCLASS}).append(trim(ext))]
             }
 
-            function inject (evt, ext, parents) {
+            function inject (evt, ext, parents, depth) {
               let arrow = $(evt.target)
               let tr = arrow.parent().parent()
               // let add = renderTripleExpr(schema.shapes[ext].expression, lead, false)
@@ -186,7 +189,7 @@ var ShExHTML = (function () {
                 shapeDecl = shapeDecl.shapeExpr
               }
               let allMyElts = []
-              let add = renderShapeExpr(shapeDecl, lead, null, false, allMyElts)
+              let add = renderShapeExpr(shapeDecl, lead, null, false, allMyElts, depth + 1)
               Array.prototype.splice.apply(allMyElts, [0, 0].concat(add))
               Array.prototype.splice.apply(parents, [0, 0].concat(allMyElts))
               add.forEach(elt => elt.hide())
@@ -201,28 +204,28 @@ var ShExHTML = (function () {
               arrow.off()
               doomed.forEach(elt => elt.hide('slow', function() { elt.remove();}))
               arrow.text(ARROW_down)
-              arrow.on('click', (evt) => inject(evt, ext, []))
+              arrow.on('click', (evt) => inject(evt, ext, [], depth))
             }
           }
-          return expr.expression ? top.concat(renderTripleExpr(expr.expression, lead, true)) : top
+          return expr.expression ? top.concat(renderTripleExpr(expr.expression, lead, true, depth)) : top
         case 'NodeConstraint':
           if ('values' in expr) {
             return top.concat(expr.values.map(
-              val => $('<tr><td></td><td style="display: list-item;">' + trimStr(val) + '</td><td></td></tr>')
+              val => $(`<tr data-inclusionDepth="${depth}"><td></td><td style="display: list-item;">` + trimStr(val) + '</td><td></td></tr>')
             ))
           } else {
-            return top.concat([$('<tr><td>...</td><td>' + JSON.stringify(expr) + '</td><td></td></tr>')])
+            return top.concat([$(`<tr data-inclusionDepth="${depth}"><td>...</td><td>` + JSON.stringify(expr) + '</td><td></td></tr>')])
           }
         default:
           throw Error('renderShapeExpr has no handler for ' + JSON.stringify(expr, null, 2))
         }
       }
 
-      function renderTripleExpr(expr, lead, last) {
+      function renderTripleExpr(expr, lead, last, depth) {
         switch (expr.type) {
         case 'EachOf':
           return expr.expressions.reduce(
-            (acc, nested, i) => acc.concat(renderTripleExpr(nested, lead, i === expr.expressions.length - 1)), []
+            (acc, nested, i) => acc.concat(renderTripleExpr(nested, lead, i === expr.expressions.length - 1, depth)), []
           )
         case 'TripleConstraint':
           let inline = renderInlineShape(expr.valueExpr)
@@ -241,19 +244,23 @@ var ShExHTML = (function () {
           if (comments.length > 0) {
             predicateTD.attr('title', comments[0])
           }
-          let declRow = $('<tr/>').append(
-            predicateTD,
-            $('<td/>').append(inline),
-            $('<td/>').text(renderCardinality(expr))
-          )
+          let declRow = $('<tr/>')
+              .attr('data-inclusionDepth', depth)
+              .append(
+                predicateTD,
+                $('<td/>').append(inline),
+                $('<td/>').text(renderCardinality(expr))
+              )
           let commentRows = comments.map(
-            comment => $('<tr/>', {class: 'annotation'}).append(
-              $('<td/>', {class: 'lines'}).text(lead + '│' + '   '),
-              $('<td/>', {class: 'comment'}).text(comment)
-            )
+            comment => $('<tr/>', {class: 'annotation'})
+              .attr('data-inclusionDepth', depth)
+              .append(
+                $('<td/>', {class: 'lines'}).text(lead + '│' + '   '),
+                $('<td/>', {class: 'comment'}).text(comment)
+              )
           )
 
-          return commentRows.concat(inline === '' ? renderNestedShape(expr.valueExpr, lead + (last ? '   ' : '│') + '   ', declRow) : [declRow])
+          return commentRows.concat(inline === '' ? renderNestedShape(expr.valueExpr, lead + (last ? '   ' : '│') + '   ', declRow, depth) : [declRow])
         default:
           throw Error('renderTripleExpr has no handler for ' + expr.type)
         }
@@ -324,11 +331,11 @@ var ShExHTML = (function () {
         }
       }
 
-      function renderNestedShape (valueExpr, lead, declRow) {
+      function renderNestedShape (valueExpr, lead, declRow, depth) {
         if (valueExpr.type !== 'Shape') {
           return declRow
         }
-        return renderShapeExpr(valueExpr, lead, declRow, false, [])
+        return renderShapeExpr(valueExpr, lead, declRow, false, [], depth)
       }
 
       function renderCardinality (expr) {

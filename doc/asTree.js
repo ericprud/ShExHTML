@@ -212,7 +212,7 @@ async function main () {
 
   const cgiParms = location.search.substr(1).split(/[,&]/).map(
     pair => pair.split("=").map(decodeURIComponent)
-  )
+  ).filter(pair => Array.isArray(pair) && pair.length === 2)
   cgiParms.reduce((acc, pair) => {
     const [name, value] = pair
     switch (name) {

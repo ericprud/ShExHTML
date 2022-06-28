@@ -1,0 +1,43 @@
+PREFIX vocab: <http://vocab.example/ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX shexmi: <http://www.w3.org/ns/shex-xmi#>
+PREFIX mark: <https://github.com/commonmark/commonmark.js>
+BASE <http://vocab.example/ns>
+
+<#Leaf> CLOSED EXTENDS @<#G1-1> EXTENDS @<#G1-2> {
+  vocab:Lp1 xsd:boolean *
+  // shexmi:comment """asdf asdf""";
+  vocab:Lp2 @vocab:BlackSpaceRule *
+  // shexmi:comment """asdf asdf""";
+}
+// shexmi:package "App"
+
+<#G2> CLOSED {
+  vocab:G2p1 xsd:string *
+  // shexmi:comment """Value of this string""";
+  vocab:G2p2 xsd:language *
+  // shexmi:comment """Indicates ... Australia.""";
+}
+// shexmi:package "Lib"
+
+<#G1-1> CLOSED EXTENDS @<#G2> {
+  vocab:G1-1p1 {
+    vocab:Lp1a xsd:string # /^ab*c$/
+    // shexmi:comment "l2a";
+    vocab:Lp1b xsd:integer
+    // shexmi:comment """l2b"""; 
+  } *
+  // shexmi:comment """Indicates ... text.""";
+  vocab:G1-1p2 xsd:string *
+  // shexmi:comment """If ... type.""";
+}
+// shexmi:package "Lib"
+
+<#G1-2> CLOSED EXTENDS @<#G2> {
+  vocab:G1-2p1 xsd:boolean *
+  // shexmi:comment """Indicates ... text.""";
+  vocab:G1-2p2 xsd:string *
+  // shexmi:comment """If ... type.""";
+}
+// shexmi:package "Lib"
+

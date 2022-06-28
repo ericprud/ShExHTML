@@ -51,9 +51,18 @@
     top: -0.2em;
 }
 
-tr[data-depth="1"] > td {
-    border-right: thick solid #77f;
-}
+      tr[data-inclusionDepth="1"] > td:nth-child(1) {
+          border-right: 1em solid #ddf;
+          /* padding-right: 1em; */
+      }
+      tr[data-inclusionDepth="2"] > td:nth-child(1) {
+          border-right: 2em solid #bbf;
+          /* padding-right: 2em; */
+      }
+      tr[data-inclusionDepth="3"] > td:nth-child(1) {
+          border-right: 3em solid #99f;
+          /* padding-right: 3em; */
+      }
       #loadform { float: left; border: thin solid #f77; }
       .result { float:left; }
       .keyword { color: #818; }
@@ -324,8 +333,8 @@ border-left: 1px solid #fdd;
           NS:<br/>
           switches:
         </p>
-        <p style="float:left; margin-left: .5em;"><input id="load-file" name="files[]" multiple="multiple" type="file" /><br/><input size="35" id="load-url"/><br/>
-          <input id="namespace" size="35" value="http://ddi-alliance.org/ns/#"/><br/>
+        <p style="float:left; margin-left: .5em;"><input id="load-file" name="files[]" multiple="multiple" type="file" /><br/><input size="35" id="load-url" value="../examples/AppLib.shex"/><br/>
+          <input id="namespace" size="35" value="http://vocab.example/ns"/><br/>
           <label for="inventMissing">invent missing shapes</label><input id="inventMissing" type="checkbox" checked="checked"/>
         </p>
       </form>
