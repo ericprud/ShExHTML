@@ -177,7 +177,7 @@ var ShExHTML = (function () {
               arrow.on('click', (evt) => {
                 inject(evt, ext, parents, depth)
               })
-              return [arrow, $('<a/>', {href: '#' + trim(ext).text(), class: UPCLASS}).append(trim(ext))]
+              return [arrow, $('<a/>', {href: '#' + encodeURIComponent(trim(ext).text()), class: UPCLASS}).append(trim(ext))]
             }
 
             function inject (evt, ext, parents, depth) {
