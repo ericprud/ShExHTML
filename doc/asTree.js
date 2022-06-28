@@ -110,6 +110,17 @@ function prepareControls () {
       reader.readAsText(evt.target.files[0]);
     });
   });
+
+  document.addEventListener('keypress', rerender, false);
+
+  function rerender (evt) {
+    if (/*evt.ctrlKey && */evt.key === 'r') {
+      $('#render').empty();
+      setTimeout(() => {
+        $("#reparse").click();
+      }, 500)
+    }
+  }
 }
 
 function toggleControls (evt) {
@@ -158,7 +169,7 @@ function toggleControlsArrow (which) {
   }
 }
 
-function main () {
+async function main () {
   let $ = window.jQuery
 
   $('#load-file').on('change', function (evt) {
@@ -184,8 +195,13 @@ function main () {
             }
             // This may take a long time to render.
             $('<textarea/>', {cols: 60, rows: 10}).val(loadEvent.target.result).appendTo(div)
-            let doIt = evt => parseAndRender(loadEvent.target.result, 'uploaded ' + file.name, status)
-            div.append($('<button/>').text('reparse').on('click', doIt))
+            let doIt = evt => parseAndRender(
+              loadEvent.target.result,
+              'uploaded ' + file.name,
+              status,
+              $('#namespace').val()
+            )
+            div.append($('<button/>', {id: "reparse"}).text('reparse').on('click', doIt))
             doIt(null)
           }
           loader.readAsText(file)
@@ -197,21 +213,21 @@ function main () {
   const cgiParms = location.search.substr(1).split(/[,&]/).map(
     pair => pair.split("=").map(decodeURIComponent)
   )
-  cgiParms.forEach(pair => {
+  cgiParms.reduce((acc, pair) => {
     const [name, value] = pair
     switch (name) {
     case 'NS':
       $('#namespace').val(value)
-      break
+      return acc
     case 'URL':
-      load(value)
-      break
+      $('#load-url').val(value)
+      return acc.concat([[value, $('#namespace').val()]]);
     }
-  })
+  }, []).forEach(([source, namespace]) => load(source, namespace))
 
-  $('#load-url').on('change', function (evt) { load($(this).val()); })
+  $('#load-url').on('change', function (evt) { load($(this).val(), $('#namespace').val()); })
 
-  function load (source) {
+  function load (source, namespace) {
     // Give user some interface feedback before reading.
     let div = $('<div/>', {'id': source}).appendTo('#loaded')
     $('<li/>').append($('<a/>', {href: '#' + source}).text(source)).appendTo('#toc')
@@ -225,8 +241,8 @@ function main () {
     }).then(function (text) {
       window.setTimeout(() => {
         $('<textarea/>', {cols: 60, rows: 10}).val(text).appendTo(div)
-        let doIt = evt => parseAndRender(text, 'fetched ' + source, status)
-        div.append($('<button/>').text('reparse').on('click', doIt))
+        let doIt = evt => parseAndRender(text, 'fetched ' + source, status, namespace)
+        div.append($('<button/>', {id: "reparse"}).text('reparse').on('click', doIt))
         doIt(null)
       }, RENDER_DELAY)
     }).catch(function (error) {
@@ -236,17 +252,21 @@ function main () {
   }
   prepareControls()
 
-  function parseAndRender (text, title, status) {
-    let shexParser = ShExParser.construct($('#namespace').val())
+  async function parseAndRender (text, title, status, namespace) {
+    let shexParser = ShExParser.construct(namespace, null, {index: true})
     let schema = shexParser.parse(text)
-    $('.render').append(
-      ShExHTML($, Marked).asTree(schema, $('#namespace').val())
-    )
+    const schemaBox = $('<div/>')
+    $('#render').append(schemaBox)
+    // progressive rendering
+    await ShExHTML($, Marked).asTree(schema, schema._base || namespace, schema._prefixes, schemaBox)
     if (location.hash !== '') {
-      const elt = document.getElementById(location.hash.substr(1))
+      const elt = document.getElementById(decodeURIComponent(location.hash.substr(1)))
       if (elt) {
-        elt.scrollIntoView()
-        elt.classList.add('selected')
+        // elt.classList.add('selected')
+        $(document).scrollTop($(elt).offset().top)
+        // $(document).animate({ scrollTop: $(elt).offset().top }, 100)
+        $(elt).delay(100).animate({ backgroundColor: '#fff8c5'}, 250)
+        $(elt).delay(350).animate({ backgroundColor: '#ffffff'}, 2500)
       }
     }
   }

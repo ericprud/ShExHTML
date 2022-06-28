@@ -10,6 +10,6 @@ module.exports = {
     fallback: { "url": false }
   },
   optimization: {
-    // minimize: false
+    minimize: false
   },
 }

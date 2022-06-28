@@ -9,16 +9,51 @@
     <!-- <script src="../../2015/01/DrawOver.js"></script> -->
     <style>
       :root {
-          /* colors familiar to github users */
-          --color-attention-fg: #9a6700;
-          --color-attention-emphasis: #bf8700;
-          --color-attention-muted: rgba(212,167,44,0.4);
-          --color-attention-subtle: #fff8c5;
+        /* github colors */
+        --color-attention-fg: #9a6700;
+        --color-attention-emphasis: #bf8700;
+        --color-attention-muted: rgba(212,167,44,0.4);
+        --color-attention-subtle: #fff8c5;
+        /* W3C colors*/
+        --heading-text: #005a9c;
       }
       .selected {
         background-color: var(--color-attention-subtle);
         box-shadow: inset 2px 0 0 var(--color-attention-muted);
       }
+/* 95 */
+.header-wrapper {
+    display: flex;
+    align-items: baseline;
+}
+/* 96 */
+:is(h2,h3,h4,h5,h6):not(#toc>h2,#abstract>h2,#sotd>h2,.head>h2) {
+    position: relative;
+    left: -0.5em;
+}
+/* 97 */
+:is(h2,h3,h4,h5,h6):not(#toch2)+a.self-link {
+    color: inherit;
+    order: -1;
+    position: relative;
+    left: -1.1em;
+    font-size: 1rem;
+    opacity: .5;
+}
+/* 98 */
+      :is(h2,h3,h4,h5,h6)+a.self-link::before {
+          content: "§";
+          text-decoration: none;
+          color: var(--heading-text);
+      }
+/* 99 */
+:is(h2,h3)+a.self-link {
+    top: -0.2em;
+}
+
+tr[data-depth="1"] > td {
+    border-right: thick solid #77f;
+}
       #loadform { float: left; border: thin solid #f77; }
       .result { float:left; }
       .keyword { color: #818; }
@@ -157,7 +192,7 @@ border-left: 1px solid #fdd;
         /* border-left: thin solid green; */
         margin-bottom: 2ex;
     }
-    .render section, .render div {
+    #render section, #render div {
         /* border: thin dashed #ddf; */
         padding: 0em;
         margin: .5em;
@@ -222,8 +257,6 @@ border-left: 1px solid #fdd;
   </head>
 
   <body xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- G10,108 35 44 64 65 88 91 A4,5,14,16 F16,30,32 SL6,18,20,26,30,32 PDF10,12,1,20,42,59,68,79,86,89 -->
-    <!-- FLASH16,30 -->
     <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" display="none">
       <symbol id="down-arrow" viewBox="0 -10 107 63" >
         <path d="M 54,40 90,3 C 99,-5 112,8 104,16 L 60,60 c 0,0 -8,6 -14,0 L 3,16 C -5,8 8,-4 15,2 Z" />
@@ -237,30 +270,10 @@ border-left: 1px solid #fdd;
       <button id="menu-button" title="click for menu" style="float:left">
         <svg><use xlink:href="#down-arrow"/><use xlink:href="#up-arrow" style="display:none;"/></svg>
       </button>
-      <!-- <ul id="navlist" style="float:left; padding-left: 1em;"> -->
-      <!--   <li>‣ <span class="heading">drag and drop to:</span> <input type="file" id="schema-upload" class="inputfile" data-target="#inputSchema textarea"/> <label for="schema-upload" class="schema">ShEx schema</label>, <input type="file" id="data-upload" class="inputfile" data-target="#inputData textarea"/> <label for="data-upload" class="data">RDF data</label></li> -->
-      <!-- </ul> -->
       <form id="menuForm">
         <div id="controls">
           <div>
             <ul>
-              <li class="        "><h3>user interface</h3></li>
-              <li class="menuitem"><label for="interface">style:</label><select id="interface"><option value="minimal">minimal</option><option value="human">human</option><option value="appinfo">appinfo</option></select></li>
-              <li class="menuitem"><a id="download-results-button">download <span class="results">results</span></a></li>
-              <li class="        "><hr/></li>
-              <li class="        "><h3>HTTP</h3></li>
-              <li class="menuitem" id="load-schema-button">load <span class="schema">schema</span></li>
-              <li class="menuitem" id="load-data-button">load <span class="data">data</span></li>
-              <li class="menuitem" id="load-manifest-button">load <span class="manifest">manifest</span></li>
-              <li class="        "><hr/></li>
-              <li class="        "><h3>drag and drop</h3></li>
-              <li class="menuitem"><input type="checkbox" id="append"/><label for="append">drop appends</label></li>
-              <li class="menuitem"><label for="duplicateShape">duplicate shape:</label><select id="duplicateShape"><option value="abort">abort</option><option value="replace">replace</option><option value="ignore">ignore</option></select></li>
-              <li class="        "><hr/></li>
-              <li class="        "><h3>performance</h3></li>
-              <li class="menuitem"><label for="regexpEngine">error reporting:</label><select id="regexpEngine"><option value="threaded-val-nerr">thorough</option><option value="nfax-val-1err">fast</option></select></li>
-              <li class="        "><hr/></li>
-              <li class="menuitem" id="permalink"><a>Permalink</a></li>
               <li class="menuitem" id="about-button">About</li>
             </ul>
           </div>
@@ -272,19 +285,18 @@ border-left: 1px solid #fdd;
         <p class="validateTips">Enter a URL.</p>
       </div>
       <div id="about">
-        <h1>About shex-simple</h1>
+        <h1>About ShExHTNL</h1>
         <p>
-          <b>shex-simple</b> is a simple RDF validator web application.
-          It accepts a ShEx <span class="schema">schema</span> on the left in three forms: Compact Syntax (ShExC), JSON (ShExJ) and RDF/Turtle (ShExR).
-          <span class="data">Data</span> can be provided on the right in Turtle.
+          <b>ShExHTML</b> renders a ShEx schema as a copy/pastable tree composed of unicode characters.
+          It accepts a ShEx <span class="schema">schema</span> on the left in ShExC.
         </p>
         <h2>Resources</h2>
         <ul>
           <li>Sources:
           <ul>
-            <li><a href="https://github.com/shexSpec/shex.js/blob/master/doc/shex-simple.js">js</a>, <a href="https://github.com/shexSpec/shex.js/blob/master/doc/shex-simple.html">html</a> </li>
-            <li><a href="https://github.com/shexSpec/shex.js">project</a></li>
-            <li><a href="https://rawgit.com/shexSpec/shex.js/master/doc/shex-simple.html">rawgit</a></li>
+            <li><a href="https://github.com/ericprud/ShExHTML/blob/main/doc/asTree.js">js</a>, <a href="https://github.com/ericprud/ShExHTML/blob/main/doc/asTree.j">html</a> </li>
+            <li><a href="https://github.com/ericprud/ShExHTML">project</a></li>
+            <li><a href="https://github.com/ericprud/ShExHTML/blob/main/shex-html.js">library</a></li>
           </ul>
           </li>
           <li>ShEx:
@@ -308,8 +320,8 @@ border-left: 1px solid #fdd;
       <form id="loadform">
         <p style="float:left; text-align: right;">
           Load ShEx:<br/>
-          <span id="sources"><a href="../test/ddi-ConceptSystem.shex" title="flat example">s</a> <a href="../test/ddi-complete.shex" title="flat example">d</a> <!-- <a href="http://lion.ddialliance.org/xmi.xml" title="load live from lion (needs CORS headers)">l</a> --></span> URL:<br/>
-          <a href="http://ddi-alliance.org/ns/#" title="DDI prefix">ddi</a> NS:<br/>
+          <span id="sources"><!-- <a href="../test/ddi-ConceptSystem.shex" title="flat example">s</a> <a href="../test/ddi-complete.shex" title="flat example">d</a><a href="http://lion.ddialliance.org/xmi.xml" title="load live from lion (needs CORS headers)">l</a> --></span> URL:<br/>
+          NS:<br/>
           switches:
         </p>
         <p style="float:left; margin-left: .5em;"><input id="load-file" name="files[]" multiple="multiple" type="file" /><br/><input size="35" id="load-url"/><br/>
@@ -320,7 +332,7 @@ border-left: 1px solid #fdd;
     </div>
 
     <div style="clear:both">
-      <div class="render"></div>
+      <div id="render"></div>
 <!--       <h2>scribbling ideas</h2> -->
 <!--       <table style="position: relative"> -->
 <!--         <thead> -->

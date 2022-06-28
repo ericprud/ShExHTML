@@ -54,44 +54,48 @@ var ShExHTML = (function () {
 
     return { asTree }
 
-    function asTree (schema, namespace) {
-      let schemaBox = $('<div/>')
+    function asTree (schema, namespace, prefixes, schemaBox = $('<div/>')) {
       let packageRef = [null]
       let packageDiv = null
       schemaBox.append(
         $('<dl/>', { class: 'prolog' }).append(
           $('<dt/>').text('base'),
-          $('<dd/>').text(schema.base),
+          $('<dd/>').text(namespace),
           $('<dt/>').text('prefixes'),
           $('<dd/>').append(
             $('<dl/>', { class: 'prolog' }).append(
-              Object.keys(schema.prefixes || []).reduce(
+              Object.keys(prefixes || []).reduce(
                 (acc, prefix) => acc.concat(
                   $('<dt/>').text(prefix),
-                  $('<dd/>').text(schema.prefixes[prefix])
+                  $('<dd/>').text(prefixes[prefix])
                 ), [])
             )
           )
         )
       )
-      schema.shapes.forEach(
+      return Promise.all(schema.shapes.map(
         (shapeDecl, idx) => {
-          let last = idx === schema.shapes.length - 1
-          let oldPackage = packageRef[0]
-          let add = renderDecl(shapeDecl, packageRef)
-          if (oldPackage !== packageRef[0]) {
-            packageDiv = $('<section>')
-            packageDiv.append($('<h2/>', {class: CLASS_native}).text(trimStr(packageRef[0])))
-            schemaBox.append(packageDiv)
-            oldPackage = packageRef[0]
-          }
-          (packageDiv || schemaBox).append(add)
+          return new Promise((resShape, rejShape) => {
+            setTimeout(() => {
+              let last = idx === schema.shapes.length - 1
+              let oldPackage = packageRef[0]
+              let add = renderDecl(shapeDecl, packageRef)
+              if (oldPackage !== packageRef[0]) {
+                packageDiv = $('<section>')
+                packageDiv.append($('<h2/>', {class: CLASS_native}).text(trimStr(packageRef[0])))
+                schemaBox.append(packageDiv)
+                oldPackage = packageRef[0]
+              }
+              (packageDiv || schemaBox).append(add)
+              resShape(add)
+            }, 0)
+          })
         }
-      )
-      return schemaBox
+      ))
 
       function renderDecl (shapeDecl, packageRef) {
         const shapeLabel = shapeDecl.id;
+        const id = trimStr(shapeLabel)
         let abstract = false
         if (shapeDecl.type === 'ShapeDecl') {
           abstract = shapeDecl.abstract
@@ -102,8 +106,9 @@ var ShExHTML = (function () {
           $('<td/>'),
           $('<td/>')
         )
-        let div = $('<section/>')
-        div.append($('<h3/>', {id: trimStr(shapeLabel)}).append(trim(shapeLabel)))
+        let div = $('<section/>', {id: id})
+        div.append($(`<div class="header-wrapper"><h3 id="${id}"><bdi class="secno"></bdi>${id}</h3><a class="self-link" href="#${encodeURIComponent(id)}" aria-label="Permalink for ${id}"></a></div>`))
+        // div.append($('<h3/>').append(trim(shapeLabel)))
         let shexmiAnnots = (shapeDecl.annotations || []).filter(
           a => a.predicate.startsWith(SHEXMI)
         )
@@ -144,23 +149,27 @@ var ShExHTML = (function () {
         switch (expr.type) {
         case 'Shape':
           if ('extends' in expr) {
-            let exts = expr.extends.slice()
+            let exts = expr.extends.slice() // copy extends into mutable array
 
             if (declRow) {
               // Update the declRow with the first extends.
-              declRow.find('td:nth-child(2)').append(ref(exts.shift()))
+              declRow.find('td:nth-child(2)')
+                .append(ref(exts.shift(), 1))
+              declRow.addClass('includer')
             }
 
             // Each additional extends gets its own row.
             top = top.concat(exts.map(
-              ext => $('<tr/>').append(
-                $('<td/>').text(lead + '│' + '   '),
-                $('<td/>').append(ref(ext)),
-                $('<td/>')
-              )
+              ext => $('<tr/>')
+                .addClass('includer')
+                .append(
+                  $('<td/>').text(lead + '│' + '   '),
+                  $('<td/>').append(ref(ext, 1)),
+                  $('<td/>')
+                )
             ))
 
-            function ref (ext) {
+            function ref (ext, depth) {
               let arrow = $('<span/>', {class: UPCLASS}).text(ARROW_down)
               arrow.on('click', (evt) => {
                 inject(evt, ext, parents)
@@ -346,19 +355,19 @@ var ShExHTML = (function () {
           return $('<span/>', {class: KEYWORD}).text('a')
         if (term.startsWith(namespace))
           return $('<a/>', {class: CLASS_native, href: '#' + term.substr(namespace.length)}).text(term.substr(namespace.length))
-        for (var prefix in schema.prefixes) {
-          if (term.startsWith(schema.prefixes[prefix])) {
+        for (var prefix in prefixes) {
+          if (term.startsWith(prefixes[prefix])) {
             return $('<span/>', {class: CLASS_pname}).append(
               $('<span/>', {class: CLASS_prefix}).text(prefix + ':'),
-              $('<span/>', {class: CLASS_localname}).text(term.substr(schema.prefixes[prefix].length))
+              $('<span/>', {class: CLASS_localname}).text(term.substr(prefixes[prefix].length))
             )
             let pre = $('<span/>', {class: CLASS_prefix}).text(prefix + ':')
-            let loc = $('<span/>', {class: CLASS_localname}).text(term.substr(schema.prefixes[prefix].length))
+            let loc = $('<span/>', {class: CLASS_localname}).text(term.substr(prefixes[prefix].length))
             let ret = $('<span/>', {class: CLASS_pname})
             ret.prepend(pre)
             pre.after(loc)
             return ret
-            return $(`<span class="${CLASS_pname}"><span class="${CLASS_prefix}">${prefix}:</span><span class="${CLASS_localname}">${term.substr(schema.prefixes[prefix].length)}</span></span>`)
+            return $(`<span class="${CLASS_pname}"><span class="${CLASS_prefix}">${prefix}:</span><span class="${CLASS_localname}">${term.substr(prefixes[prefix].length)}</span></span>`)
           }
         }
         return term
@@ -377,9 +386,9 @@ var ShExHTML = (function () {
           return 'a'
         if (term.startsWith(namespace))
           return term.substr(namespace.length)
-        for (var prefix in schema.prefixes) {
-          if (term.startsWith(schema.prefixes[prefix])) {
-            return prefix + ':' + term.substr(schema.prefixes[prefix].length)
+        for (let prefix in prefixes) {
+          if (term.startsWith(prefixes[prefix])) {
+            return prefix + ':' + term.substr(prefixes[prefix].length)
           }
         }
         return term
