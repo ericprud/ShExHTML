@@ -1,6 +1,6 @@
 {
-  "name": "ShExHTML",
-  "version": "1.0.0",
+  "name": "shex-html",
+  "version": "0.0.1",
   "description": "HTML interfaces for displaying ShEx schemas",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/ericprud/ShExHTML#readme",
   "dependencies": {
-    "@shexjs/parser": "^1.0.0-alpha.21",
+    "@shexjs/parser": "^1.0.0-alpha.24",
     "jquery": "^3.3.1",
     "jsdom": "^20.0.0",
     "marked": "^4.0.17",
