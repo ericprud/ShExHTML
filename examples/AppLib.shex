@@ -12,7 +12,7 @@ BASE <http://vocab.example/ns>
 }
 // shexmi:package "App"
 
-<#G2> CLOSED {
+<#G2> xsd:integer AND BNODE OR /^https:/ AND CLOSED {
   vocab:G2p1 xsd:string *
   // shexmi:comment """Value of this string""";
   vocab:G2p2 xsd:language *
@@ -24,8 +24,12 @@ BASE <http://vocab.example/ns>
   vocab:G1-1p1 {
     vocab:Lp1a xsd:string # /^ab*c$/
     // shexmi:comment "l2a";
-    vocab:Lp1b xsd:integer
-    // shexmi:comment """l2b"""; 
+    vocab:Lp1b {
+      vocab:Lp1b1b xsd:integer
+      // shexmi:comment """l2b1n""";
+    } // shexmi:comment """l2b""";
+    vocab:empty {
+    } // shexmi:comment """empty""";
   } *
   // shexmi:comment """Indicates ... text.""";
   vocab:G1-1p2 xsd:string *

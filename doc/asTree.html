@@ -118,7 +118,7 @@
 #controls li.menuitem:hover { background-color: buttonface; }
 
       th { text-align: left; }
-      td { padding: 0; }
+      .shapeExpr td { padding: 0; vertical-align: top }
       td:nth-child(2) { padding: 0 1em; }
 table {
     border-collapse: collapse;
@@ -206,6 +206,30 @@ border-left: 1px solid #fdd;
         padding: 0em;
         margin: .5em;
     }
+
+    th:nth-child(2) {
+        text-align: right;
+    }
+
+    table.prolog tr *:nth-child(1) {
+        text-align: right;
+        border-right: thin solid black;
+        padding-right: 0.5em;
+    }
+
+    tr.prefix-decl *:nth-child(2) {
+        padding-left: 0.5em;
+    }
+
+    tr.prefix-decl *:nth-child(3) {
+        padding-left: 0.5em;
+    }
+/*
+      table.prolog tr *:nth-child(1)::after {
+          padding-left: .5em;
+          content: '|';
+      }
+*/
     .prefix    { color: #228b22; }
     .localname { color: #008b8b; }
     .native:hover, .native:focus {
@@ -256,7 +280,6 @@ border-left: 1px solid #fdd;
                 text-align: left;
                 margin-right: .2em;
               }
-
     </style>
 
     <link href="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
